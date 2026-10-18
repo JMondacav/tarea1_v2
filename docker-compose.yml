@@ -1,0 +1,44 @@
+name: pmd-tarea1
+
+services:
+  postgis:
+    image: postgis/postgis:16-3.4      # imagen oficial, sin capas propias
+    environment:
+      POSTGRES_USER: pmd
+      POSTGRES_PASSWORD: pmd
+      POSTGRES_DB: pmd_t1
+    command: >
+      postgres -c shared_buffers=1GB -c work_mem=128MB -c maintenance_work_mem=1GB
+               -c max_wal_size=4GB -c track_io_timing=on
+    shm_size: 1g
+    ports:
+      - "55432:5432"                   # para QGIS/DBeaver desde el host
+    volumes:
+      - pmd_t1_datos_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pmd -d pmd_t1"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+
+  # Contenedor de trabajo: no queda corriendo, se usa con "docker compose run".
+  herramientas:
+    build: ./herramientas
+    image: pmd-tarea1/herramientas:24.04
+    profiles: ["herramientas"]
+    depends_on:
+      postgis:
+        condition: service_healthy
+    environment:
+      PGHOST: postgis
+      PGPORT: "5432"
+      PGUSER: pmd
+      PGPASSWORD: pmd
+      PGDATABASE: pmd_t1
+      MPLCONFIGDIR: /tmp/matplotlib
+    volumes:
+      - ./:/trabajo                    # código y carpetas de salida
+      - ./datos:/trabajo/datos:ro      # fuentes en solo lectura
+
+volumes:
+  pmd_t1_datos_pg:

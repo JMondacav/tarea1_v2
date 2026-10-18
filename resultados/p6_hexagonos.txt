@@ -1,0 +1,49 @@
+--- P6. La grilla
+ celdas | con_edificios | con_edificios_sin_bus | p75_edificios | correlacion 
+--------+---------------+-----------------------+---------------+-------------
+    636 |           604 |                    34 |           237 |        0.18
+
+--- P6. 10 celdas con más edificios y menos rutas de bus
+ celda |   comuna    | edificios | rutas_bus |   lon    |   lat    
+-------+-------------+-----------+-----------+----------+----------
+   491 | Las Condes  |       755 |         0 | -70.5704 | -33.4264
+   426 | Providencia |       456 |         1 | -70.5947 | -33.4300
+    22 | Renca       |       265 |         1 | -70.7472 | -33.3928
+   445 | Ñuñoa       |       765 |         2 | -70.5870 | -33.4497
+   483 | Peñalolén   |       702 |         2 | -70.5716 | -33.4889
+   576 | Las Condes  |       428 |         2 | -70.5383 | -33.4346
+   555 | Las Condes  |       319 |         2 | -70.5463 | -33.4306
+   112 | Quilicura   |       243 |         2 | -70.7144 | -33.3620
+   513 | Las Condes  |       240 |         2 | -70.5623 | -33.4226
+   446 | Ñuñoa       |      1344 |         3 | -70.5868 | -33.4418
+
+--- P6. Plan (conteo de rutas por celda)
+                                            QUERY PLAN                                            
+--------------------------------------------------------------------------------------------------
+ GroupAggregate (actual time=205.006..206.581 rows=577 loops=1)
+   Group Key: h.celda
+   Buffers: shared hit=15218 read=5
+   I/O Timings: shared read=0.025
+   ->  Sort (actual time=204.997..205.460 rows=14298 loops=1)
+         Sort Key: h.celda, r.route_id
+         Sort Method: quicksort  Memory: 856kB
+         Buffers: shared hit=15218 read=5
+         I/O Timings: shared read=0.025
+         ->  Nested Loop (actual time=0.183..198.934 rows=14298 loops=1)
+               Buffers: shared hit=15218 read=5
+               I/O Timings: shared read=0.025
+               ->  Seq Scan on recorridos r (actual time=0.004..0.477 rows=690 loops=1)
+                     Filter: (modo = 'bus'::text)
+                     Rows Removed by Filter: 18
+                     Buffers: shared hit=384
+               ->  Index Scan using hex_gix on hex h (actual time=0.123..0.281 rows=21 loops=690)
+                     Index Cond: (geom && r.geom)
+                     Filter: st_intersects(r.geom, geom)
+                     Rows Removed by Filter: 89
+                     Buffers: shared hit=13438 read=5
+                     I/O Timings: shared read=0.025
+ Planning:
+   Buffers: shared hit=2
+ Planning Time: 0.313 ms
+ Execution Time: 206.628 ms
+

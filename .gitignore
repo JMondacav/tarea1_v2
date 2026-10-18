@@ -1,0 +1,12 @@
+# Fuentes: no se versionan
+datos/*
+!datos/LEEME.md
+*.pbf
+*.osm
+GTFS*.zip
+comunas_cl.sql
+
+# Temporales del pipeline
+trabajo_tmp/
+__pycache__/
+pruebas/sinteticos/

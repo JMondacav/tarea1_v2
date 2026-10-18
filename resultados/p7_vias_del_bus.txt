@@ -1,0 +1,45 @@
+--- P7. Bus-km diarios por jerarquía vial OSM
+         via          | km_de_red | bus_km_dia | pct_bus_km 
+----------------------+-----------+------------+------------
+ primaria             |    2891.7 |     286511 |       36.8
+ secundaria           |    2180.6 |     202250 |       26.0
+ terciaria            |    1439.5 |     131831 |       16.9
+ solo_bus             |     737.3 |      68973 |        8.9
+ autopista            |     609.9 |      42591 |        5.5
+ local                |     400.4 |      36494 |        4.7
+ servicio             |      93.6 |       8808 |        1.1
+ sin calle OSM a 20 m |       6.7 |        501 |        0.1
+
+--- P7. Rutas con más trazado sin calle OSM (con al menos 2 km en la caja)
+ ruta | sentido | km_en_caja | pct_sin_calle 
+------+---------+------------+---------------
+ D17  |       0 |       17.6 |           5.7
+ C26c |       0 |       12.9 |           3.5
+ 117c |       0 |       14.8 |           3.1
+ C14  |       0 |       11.0 |           2.3
+ 410e |       0 |       15.8 |           2.2
+ C30e |       0 |       13.5 |           2.2
+ 410  |       0 |       17.2 |           2.0
+ C10e |       0 |       13.1 |           1.9
+ C06  |       0 |       18.4 |           1.4
+ 409  |       0 |       18.4 |           1.4
+
+--- P7. Plan (KNN con el índice parcial de calles transitables), 2000 muestras
+                                              QUERY PLAN                                              
+------------------------------------------------------------------------------------------------------
+ Nested Loop Left Join (actual time=0.054..32.725 rows=2000 loops=1)
+   Buffers: shared hit=13816
+   ->  Limit (actual time=0.005..0.326 rows=2000 loops=1)
+         Buffers: shared hit=26
+         ->  Seq Scan on p7_muestras (actual time=0.004..0.200 rows=2000 loops=1)
+               Buffers: shared hit=26
+   ->  Limit (actual time=0.016..0.016 rows=1 loops=2000)
+         Buffers: shared hit=13790
+         ->  Index Scan using calles_bus_gix on calles k (actual time=0.015..0.015 rows=1 loops=2000)
+               Index Cond: (geom && st_expand(p7_muestras.geom, '20'::double precision))
+               Order By: (geom <-> p7_muestras.geom)
+               Filter: st_dwithin(geom, p7_muestras.geom, '20'::double precision)
+               Buffers: shared hit=13790
+ Planning Time: 0.098 ms
+ Execution Time: 32.849 ms
+

@@ -1,0 +1,40 @@
+--- P3. Sin contraparte a menos de 50 m
+    fuente    | en_caja | sin_pareja 
+--------------+---------+------------
+ GTFS bus     |    6569 |        375
+ OSM bus_stop |    6572 |        362
+
+--- P3. ¿A qué paraderos GTFS les falta pareja? Por cuartil de salidas en día hábil
+ cuartil | paraderos | desde | hasta | pct_sin_pareja_osm 
+---------+-----------+-------+-------+--------------------
+       1 |      1643 |     2 |   115 |                8.3
+       2 |      1642 |   115 |   248 |                6.2
+       3 |      1642 |   249 |   419 |                4.3
+       4 |      1642 |   419 |  2348 |                4.0
+
+--- P3. Sensibilidad al umbral
+ metros | gtfs_sin_osm 
+--------+--------------
+     20 |         1269
+     50 |          375
+    100 |          136
+
+--- P3. Plan (sentido GTFS -> OSM)
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Aggregate (actual time=37.740..37.742 rows=1 loops=1)
+   Buffers: shared hit=20073
+   ->  Nested Loop Anti Join (actual time=0.041..37.714 rows=375 loops=1)
+         Buffers: shared hit=20073
+         ->  Seq Scan on paraderos_gtfs p (actual time=0.004..0.635 rows=6569 loops=1)
+               Filter: (en_caja AND sirve_bus)
+               Rows Removed by Filter: 834
+               Buffers: shared hit=152
+         ->  Index Scan using paraderos_osm_gix on paraderos_osm o (actual time=0.005..0.005 rows=1 loops=6569)
+               Index Cond: (geom && st_expand(p.geom, '50'::double precision))
+               Filter: st_dwithin(geom, p.geom, '50'::double precision)
+               Rows Removed by Filter: 0
+               Buffers: shared hit=19921
+ Planning Time: 1.193 ms
+ Execution Time: 37.760 ms
+

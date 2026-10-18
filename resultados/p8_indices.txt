@@ -1,0 +1,39 @@
+--- Índices usados por P1-P7
+   esquema   |       tabla       |         indice         |  usos  |   tamano   
+-------------+-------------------+------------------------+--------+------------
+ preguntas   | hex               | hex_celda_ix           |      0 | 32 kB
+ stgo        | amenidades        | amenidades_gix         |      0 | 880 kB
+ stgo        | amenidades        | amenidades_pkey        |      0 | 480 kB
+ stgo        | amenidades        | amenidades_tipo_ix     |      0 | 168 kB
+ stgo        | calles            | calles_geom_gix        |      0 | 4224 kB
+ stgo        | calles            | calles_pkey            |      0 | 2232 kB
+ stgo        | comunas           | comunas_caja_gix       |      0 | 8192 bytes
+ stgo        | comunas_sub       | comunas_sub_gix        |      0 | 8192 bytes
+ stgo        | comunas_sub       | comunas_sub_pkey       |      0 | 16 kB
+ stgo        | edificios         | edificios_geom_gix     |      0 | 4824 kB
+ stgo        | edificios         | edificios_pkey         |      0 | 3048 kB
+ stgo        | fuente            | fuente_pkey            |      0 | 16 kB
+ stgo        | paraderos_osm     | paraderos_osm_pkey     |      0 | 176 kB
+ stgo        | recorridos        | recorridos_pkey        |      0 | 32 kB
+ stgo        | recorridos        | recorridos_ruta_ix     |      0 | 32 kB
+ stgo        | red_ruta          | red_ruta_pkey          |      0 | 56 kB
+ stgo        | registro          | registro_pkey          |      0 | 16 kB
+ stgo        | servicio_paradero | servicio_paradero_pkey |      0 | 296 kB
+ stgo        | viajes            | viajes_shape_id_idx    |      0 | 216 kB
+ stgo        | comunas           | comunas_pkey           |      2 | 16 kB
+ stgo        | rutas             | rutas_pkey             |      2 | 32 kB
+ stgo        | viajes            | viajes_pkey            |      4 | 936 kB
+ stgo        | viajes            | viajes_route_id_idx    |      5 | 208 kB
+ fuente_gtfs | stop_times        | stop_times_trip_ix     |      8 | 8216 kB
+ stgo        | comunas           | comunas_gix            |     10 | 8192 bytes
+ stgo        | amenidades        | amenidades_salud_gix   |     48 | 56 kB
+ stgo        | paraderos_gtfs    | paraderos_gtfs_pkey    |     48 | 184 kB
+ stgo        | recorridos        | recorridos_gix         |    636 | 40 kB
+ preguntas   | hex               | hex_gix                |    690 | 40 kB
+ stgo        | edificios         | edificios_punto_gix    |    765 | 4808 kB
+ stgo        | red_ruta          | red_ruta_gix           |   1956 | 32 kB
+ stgo        | paraderos_gtfs    | paraderos_gtfs_bus_gix | 119015 | 304 kB
+ stgo        | paraderos_gtfs    | paraderos_gtfs_gix     | 125845 | 288 kB
+ stgo        | paraderos_osm     | paraderos_osm_gix      | 151860 | 272 kB
+ stgo        | calles            | calles_bus_gix         | 169191 | 2936 kB
+

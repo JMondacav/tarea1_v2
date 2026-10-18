@@ -1,0 +1,67 @@
+--- P2. Edificios a más de 500 m de un paradero, por fuente
+       nombre        | edificios | pct_lejos_gtfs | pct_lejos_osm | pct_solo_gtfs_lejos | pct_solo_osm_lejos 
+---------------------+-----------+----------------+---------------+---------------------+--------------------
+ Lo Barnechea        |        78 |           57.7 |          57.7 |                 0.0 |                0.0
+ Huechuraba          |      1269 |           10.7 |          10.4 |                 0.6 |                0.2
+ Quilicura           |      2295 |            7.3 |           7.3 |                 0.1 |                0.1
+ La Florida          |       965 |            4.7 |           4.7 |                 0.0 |                0.0
+ Vitacura            |      4010 |            3.9 |           3.9 |                 0.0 |                0.0
+ Peñalolén           |      3464 |            2.9 |           2.5 |                 0.8 |                0.4
+ Las Condes          |     10841 |            2.6 |           2.5 |                 0.1 |                0.0
+ Recoleta            |      3085 |            1.8 |           1.0 |                 0.9 |                0.0
+ La Reina            |     11876 |            1.8 |           1.2 |                 0.5 |                0.0
+ Independencia       |      1374 |            1.7 |           1.5 |                 0.2 |                0.0
+ Providencia         |     12129 |            0.7 |           0.1 |                 0.6 |                0.0
+ Maipú               |      9831 |            0.2 |           0.2 |                 0.0 |                0.0
+ Renca               |      2856 |            0.1 |           0.1 |                 0.0 |                0.0
+ Cerrillos           |      3947 |            0.1 |           0.1 |                 0.0 |                0.0
+ La Granja           |       152 |            0.0 |           0.0 |                 0.0 |                0.0
+ Santiago            |     19716 |            0.0 |           0.0 |                 0.0 |                0.0
+ Ñuñoa               |     12788 |            0.0 |           0.0 |                 0.0 |                0.0
+ Lo Prado            |       915 |            0.0 |           0.0 |                 0.0 |                0.0
+ Macul               |      5230 |            0.0 |           0.0 |                 0.0 |                0.0
+ La Cisterna         |       415 |            0.0 |           0.0 |                 0.0 |                0.0
+ Lo Espejo           |       217 |            0.0 |           0.0 |                 0.0 |                0.0
+ Pedro Aguirre Cerda |      1154 |            0.0 |           0.0 |                 0.0 |                0.0
+ Estación Central    |      2470 |            0.0 |           0.0 |                 0.0 |                0.0
+ Cerro Navia         |       458 |            0.0 |           0.0 |                 0.0 |                0.0
+ San Ramón           |        10 |            0.0 |           0.0 |                 0.0 |                0.0
+ Conchalí            |      1341 |            0.0 |           0.0 |                 0.0 |                0.0
+ Quinta Normal       |      1066 |            0.0 |           0.0 |                 0.0 |                0.0
+ San Miguel          |      1754 |            0.0 |           0.0 |                 0.0 |                0.0
+ San Joaquín         |      2647 |            0.0 |           0.0 |                 0.0 |                0.0
+ Pudahuel            |       662 |            0.0 |           0.0 |                 0.0 |                0.0
+
+--- P2. Toda la caja y tabla de acuerdo entre fuentes (edificios)
+ lejos_gtfs | lejos_osm | edificios | pct  
+------------+-----------+-----------+------
+ f          | f         |    117660 | 98.9
+ f          | t         |        25 |  0.0
+ t          | f         |       215 |  0.2
+ t          | t         |      1115 |  0.9
+
+--- P2. Plan (anti-join contra el índice parcial de paraderos de bus)
+                                                           QUERY PLAN                                                           
+--------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate (actual time=400.896..403.682 rows=1 loops=1)
+   Buffers: shared hit=445933
+   ->  Gather (actual time=400.780..403.671 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=445933
+         ->  Partial Aggregate (actual time=385.357..385.358 rows=1 loops=3)
+               Buffers: shared hit=445933
+               ->  Nested Loop Anti Join (actual time=104.063..385.300 rows=443 loops=3)
+                     Buffers: shared hit=445933
+                     ->  Parallel Seq Scan on edificios e (actual time=0.003..3.743 rows=39672 loops=3)
+                           Buffers: shared hit=4618
+                     ->  Index Scan using paraderos_gtfs_gix on paraderos_gtfs p (actual time=0.007..0.007 rows=1 loops=119015)
+                           Index Cond: (geom && st_expand(e.punto, '500'::double precision))
+                           Filter: (sirve_bus AND st_dwithin(geom, e.punto, '500'::double precision))
+                           Rows Removed by Filter: 1
+                           Buffers: shared hit=441315
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 1.339 ms
+ Execution Time: 404.126 ms
+

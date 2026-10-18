@@ -1,0 +1,99 @@
+### Fuentes
+ clave |       archivo        | tamano |            fecha_datos            |    sha256    |                                comentario                                 
+-------+----------------------+--------+-----------------------------------+--------------+---------------------------------------------------------------------------
+ dpa   | comunas_cl.sql       | 208 MB | DPA 2023                          | 761e0c5c285d | Laboratorio 03
+ gtfs  | GTFS_20261003.zip    | 12 MB  | V168.20261003 (20261003-20261231) | e2dded096b18 | DTPM, GTFS vigente al descargar
+ osm   | chile-261017.osm.pbf | 334 MB | 2026-10-17T20:20:51Z              | 67705ad63a35 | Geofabrik; recorte -70.75,-33.52,-70.52,-33.36 (osmium, estrategia smart)
+
+### Tablas de stgo
+       tabla       | filas  | tamano  |                                  indices                                  
+-------------------+--------+---------+---------------------------------------------------------------------------
+ amenidades        |  20983 | 3824 kB | amenidades_gix, amenidades_pkey, amenidades_salud_gix, amenidades_tipo_ix
+ caja              |      1 | 16 kB   | 
+ calles            | 101218 | 51 MB   | calles_bus_gix, calles_geom_gix, calles_pkey
+ comunas           |     30 | 688 kB  | comunas_caja_gix, comunas_gix, comunas_pkey
+ comunas_sub       |    129 | 160 kB  | comunas_sub_gix, comunas_sub_pkey
+ edificios         | 119015 | 49 MB   | edificios_geom_gix, edificios_pkey, edificios_punto_gix
+ fuente            |      3 | 32 kB   | fuente_pkey
+ paraderos_gtfs    |   7403 | 2032 kB | paraderos_gtfs_bus_gix, paraderos_gtfs_gix, paraderos_gtfs_pkey
+ paraderos_osm     |   7153 | 1312 kB | paraderos_osm_gix, paraderos_osm_pkey
+ recorridos        |    708 | 7256 kB | recorridos_gix, recorridos_pkey, recorridos_ruta_ix
+ red_ruta          |    604 | 4624 kB | red_ruta_gix, red_ruta_pkey
+ registro          |     69 | 32 kB   | registro_pkey
+ rutas             |    428 | 104 kB  | rutas_pkey
+ servicio_paradero |  12465 | 1376 kB | servicio_paradero_pkey
+ viajes            |  26159 | 3256 kB | viajes_pkey, viajes_route_id_idx, viajes_shape_id_idx
+
+### Registro de la carga
+  etapa  |                                 descripcion                                 |    n     
+---------+-----------------------------------------------------------------------------+----------
+ osm     | PBF recortado a la caja (bytes)                                             | 19592602
+ osm     | fuente_osm.points (ogr2ogr)                                                 |   290097
+ osm     | fuente_osm.lines (ogr2ogr)                                                  |   193367
+ osm     | fuente_osm.multipolygons (ogr2ogr)                                          |   169939
+ gtfs    | fuente_gtfs.trips (COPY)                                                    |    26159
+ gtfs    | fuente_gtfs.agency (COPY)                                                   |        4
+ gtfs    | fuente_gtfs.calendar (COPY)                                                 |        6
+ gtfs    | fuente_gtfs.calendar_dates (COPY)                                           |       12
+ gtfs    | fuente_gtfs.feed_info (COPY)                                                |        1
+ gtfs    | fuente_gtfs.frequencies (COPY)                                              |    14542
+ gtfs    | fuente_gtfs.levels (COPY)                                                   |      474
+ gtfs    | fuente_gtfs.pathways (COPY)                                                 |     7388
+ gtfs    | fuente_gtfs.routes (COPY)                                                   |      428
+ gtfs    | fuente_gtfs.shapes (COPY)                                                   |   456573
+ gtfs    | fuente_gtfs.stop_times (COPY)                                               |  1098529
+ gtfs    | fuente_gtfs.stops (COPY)                                                    |    18455
+ dpa     | errores no fatales al ejecutar el volcado                                   |        0
+ dpa     | fuente_dpa.comunas desde public.comunas_cl                                  |      345
+ osm     | multipolygons inválidos: Self-intersection                                  |       16
+ osm     | multipolygons inválidos (total)                                             |       16
+ osm     | lines inválidas                                                             |        0
+ osm     | edificios                                                                   |   119015
+ osm     | edificios reparados con ST_MakeValid                                        |       10
+ osm     | edificios descartados (vacíos tras reparar)                                 |        0
+ osm     | edificios con building:levels                                               |    17369
+ osm     | calles: local                                                               |    34132
+ osm     | calles: no_vehicular                                                        |    30007
+ osm     | calles: terciaria                                                           |     5045
+ osm     | calles: autopista                                                           |     1780
+ osm     | calles: secundaria                                                          |     4724
+ osm     | calles: primaria                                                            |     4913
+ osm     | calles: servicio                                                            |    19829
+ osm     | calles: solo_bus                                                            |      788
+ osm     | paraderos_osm en la caja (nodos highway=bus_stop)                           |     6572
+ osm     | paraderos_osm en el margen de 600 m (solo para distancias)                  |      581
+ osm     | fuera por etiquetado: plataformas de bus sin highway=bus_stop               |       22
+ osm     | amenidades (area)                                                           |     7470
+ osm     | amenidades (nodo)                                                           |    13513
+ tiempo  | osm_derivar.sql (s)                                                         |       11
+ gtfs    | service_id de día hábil (miércoles): L, LJ                                  |        2
+ gtfs    | viajes definidos por frecuencia                                             |    14542
+ gtfs    | viajes con horario fijo                                                     |    11617
+ gtfs    | salidas en día hábil (todas las rutas)                                      |    68834
+ gtfs    | stops.txt (todo el feed)                                                    |    18455
+ gtfs    | paraderos_gtfs en la caja                                                   |     6812
+ gtfs    | paraderos_gtfs en el margen de 600 m (solo para distancias)                 |      591
+ gtfs    | paraderos_gtfs en la caja con servicio de bus                               |     6569
+ gtfs    | paraderos_gtfs en la caja sin salidas en día hábil                          |        1
+ gtfs    | shapes.txt: puntos                                                          |   456573
+ gtfs    | shapes.txt: shape_id                                                        |      981
+ gtfs    | shape_id con shape_pt_sequence repetido                                     |        0
+ gtfs    | shape_id usados por más de una ruta                                         |        0
+ gtfs    | recorridos (shapes) que tocan la caja                                       |      708
+ gtfs    | shapes descartados por no tener viajes                                      |      122
+ gtfs    | red_ruta (ruta x sentido)                                                   |      604
+ gtfs    | km suma de shapes (bus)                                                     |    14932
+ gtfs    | km de red unida (bus)                                                       |    12357
+ gtfs    | recorridos que se cruzan a sí mismos (circuitos)                            |      257
+ tiempo  | gtfs_derivar.sql (s)                                                        |        5
+ dpa     | columnas usadas: nombre=comuna, código=cut_com, geom=geom, SRID origen=5361 |         
+ dpa     | comunas que tocan la caja                                                   |       30
+ dpa     | comunas enteras dentro de la caja                                           |       13
+ dpa     | vértices de las comunas completas                                           |    12601
+ dpa     | vértices de la parte en la caja                                             |     5106
+ dpa     | piezas de comunas_sub (64 vértices)                                         |      129
+ tiempo  | dpa_derivar.sql (s)                                                         |       38
+ indices | índices en stgo                                                             |       32
+ tiempo  | indices.sql (s)                                                             |        2
+ tiempo  | carga completa (s)                                                          |      139
+

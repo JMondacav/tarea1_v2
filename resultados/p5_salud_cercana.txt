@@ -1,0 +1,52 @@
+--- P5. Ruta analizada
+ ruta | salidas_dia_habil 
+------+-------------------
+ I09  |               473
+
+--- P5. Establecimiento de salud más cercano por paradero
+ orden | codigo |                   paradero                   | amenity  |           establecimiento           | metros 
+-------+--------+----------------------------------------------+----------+-------------------------------------+--------
+    21 |        | PI387-Parada 2 / Paradero 12 Pajaritos       | clinic   | CESFAM Clotario Blest               |    583
+    22 |        | PI388-Parada / Colegio Santa María de Maipú  | clinic   | CESFAM Clotario Blest               |    712
+    23 |        | PI389-Parada 2 / (M) Monte Tabor             | pharmacy | Farmacias Saint Germain             |    736
+    24 |        | PI390-Parada 2 / Paradero 10 Pajaritos       | pharmacy | Farmacias Saint Germain             |    218
+    25 |        | PI391-Parada 2 / (M) Las Parcelas            | pharmacy | Cruz Verde                          |    121
+    26 |        | PI392-Parada 2 / Paradero 8 Pajaritos        | pharmacy | Farmacias del Dr. Simi              |    133
+    27 |        | PI393-Parada 2 / Paradero 7 1/2 Pajaritos    | pharmacy | Farmacias Ahumada                   |    300
+    28 |        | PI394-Parada 2 / Paradero 7 Pajaritos        | pharmacy | Farmacias Ahumada                   |     75
+    29 |        | PI395-Parada / Paradero 6 Pajaritos          | clinic   | CESFAM Santiago Occidente           |    145
+    30 |        | PI396-Parada / Paradero 5 1/2 Pajaritos      | clinic   | CESFAM Santiago Occidente           |    581
+    31 |        | PI397-Parada / Paradero 5 Pajaritos          | pharmacy | Cruz Verde                          |    662
+    32 |        | PI398-Parada 2 / Paradero 4 Pajaritos        | pharmacy | Cruz Verde                          |    317
+    33 |        | PI1632-Alameda / esq. Pasaje El Lingue       | pharmacy | Farmacia Chilena                    |    165
+    34 |        | PI1042-Parada 2 / (M) Las Rejas              | pharmacy | Cruz Verde                          |     87
+    35 |        | PI438-Parada 1 / (M) Ecuador                 | doctors  | Instituto de Rehabilitación Teletón |     88
+    36 |        | PI448-Parada 1 / Concón                      | pharmacy | Farmacias del Dr. Simi              |    272
+    37 |        | PI401-Parada 4 / (M) San Alberto Hurtado     | pharmacy | Farmacias del Dr. Simi              |     78
+    38 |        | PI341-Parada 1 / (M) Universidad de Santiago | pharmacy | Farmacia Belgo Chilena              |     37
+    39 |        | PI1812-Parada 11 / (M) Estación Central      | pharmacy | Farmacias del Dr. Simi              |     49
+    40 |        | PA657-Parada 5 / (M) Unión Latinoamericana   | pharmacy | SalcoBrand                          |     62
+    41 |        | PA164-Parada 2 / (M) República               | pharmacy | Farmacia Ochoa                      |     70
+    42 |        | PA165-Parada 7 / (M) Los Héroes              | pharmacy | Redfarma                            |    104
+    43 |        | PA215-Parada 5 / (M) La Moneda               | pharmacy | Cruz Verde                          |     10
+    44 |        | PA167-Parada 6 / (M) Universidad de Chile    | pharmacy | Farmacias Ahumada                   |     63
+
+ paraderos | mediana_m | max_m | pct_a_400m 
+-----------+-----------+-------+------------
+        24 |       121 |   736 |       79.2
+
+--- P5. Plan (KNN sobre el índice GiST parcial de salud)
+                                                  QUERY PLAN                                                  
+--------------------------------------------------------------------------------------------------------------
+ Nested Loop (actual time=0.038..0.486 rows=24 loops=1)
+   Buffers: shared hit=111
+   ->  Seq Scan on p5_paraderos pa (actual time=0.003..0.005 rows=24 loops=1)
+         Buffers: shared hit=1
+   ->  Limit (actual time=0.020..0.020 rows=1 loops=24)
+         Buffers: shared hit=110
+         ->  Index Scan using amenidades_salud_gix on amenidades a (actual time=0.019..0.019 rows=1 loops=24)
+               Order By: (geom <-> pa.geom)
+               Buffers: shared hit=110
+ Planning Time: 0.096 ms
+ Execution Time: 0.501 ms
+

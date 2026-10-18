@@ -1,0 +1,90 @@
+--- P4. Km de red de bus por comuna (dentro de la caja; ida y vuelta cuentan aparte)
+       nombre        | km_bus | rutas | km_por_km2 
+---------------------+--------+-------+------------
+ Santiago            | 1117.6 |   149 |       48.2
+ Las Condes          |  621.6 |    71 |       20.1
+ Estación Central    |  522.3 |    78 |       36.3
+ Peñalolén           |  476.3 |    67 |       15.4
+ Ñuñoa               |  457.5 |    57 |       27.1
+ Providencia         |  394.3 |    80 |       27.3
+ Renca               |  343.1 |    33 |       20.5
+ Quilicura           |  331.6 |    45 |       19.9
+ Vitacura            |  311.7 |    40 |       11.8
+ Maipú               |  301.5 |    60 |       27.0
+ Cerrillos           |  295.0 |    52 |       19.4
+ La Reina            |  279.7 |    34 |       16.3
+ Quinta Normal       |  270.2 |    45 |       22.9
+ Huechuraba          |  263.7 |    48 |       12.6
+ Conchalí            |  263.2 |    49 |       24.1
+ Recoleta            |  247.0 |    68 |       15.8
+ San Miguel          |  235.6 |    47 |       24.5
+ Macul               |  233.0 |    51 |       18.2
+ Lo Prado            |  208.1 |    68 |       31.8
+ La Florida          |  204.1 |    56 |       22.5
+ San Joaquín         |  197.0 |    38 |       19.8
+ Pedro Aguirre Cerda |  193.6 |    37 |       22.2
+ Independencia       |  186.5 |    41 |       25.4
+ Cerro Navia         |  156.0 |    33 |       21.9
+ Pudahuel            |  122.1 |    62 |       23.7
+ Lo Espejo           |  101.8 |    34 |       25.2
+ La Cisterna         |   43.1 |    27 |       25.0
+ La Granja           |   15.1 |    20 |       14.0
+ Lo Barnechea        |    7.7 |    10 |        2.7
+ San Ramón           |    3.1 |    14 |       19.1
+
+--- P4. Efecto de ST_Subdivide en el tiempo (0 = sin subdividir; km_total debe ser igual en todas)
+  max_vertices  | piezas | ms_mejor | km_total 
+----------------+--------+----------+----------
+ sin subdividir |     30 |    475.1 |   8403.2
+ 64             |    129 |    968.1 |   8403.2
+ 32             |    301 |   1633.6 |   8403.2
+ 256            |     34 |    493.8 |   8403.2
+ 16             |    749 |   1260.0 |   8403.2
+ 128            |     62 |    620.1 |   8403.2
+
+--- P4. Plan sin subdividir
+                                                QUERY PLAN                                                 
+-----------------------------------------------------------------------------------------------------------
+ GroupAggregate (actual time=156.805..483.923 rows=30 loops=1)
+   Group Key: k.gid
+   Buffers: shared hit=5149
+   ->  Sort (actual time=150.163..150.527 rows=2503 loops=1)
+         Sort Key: k.gid
+         Sort Method: quicksort  Memory: 16523kB
+         Buffers: shared hit=5149
+         ->  Nested Loop (actual time=0.158..142.418 rows=2503 loops=1)
+               Buffers: shared hit=5149
+               ->  Seq Scan on comunas k (actual time=0.004..0.053 rows=30 loops=1)
+                     Buffers: shared hit=54
+               ->  Index Scan using red_ruta_gix on red_ruta r (actual time=0.330..4.734 rows=83 loops=30)
+                     Index Cond: (geom && k.geom_caja)
+                     Filter: ((modo = 'bus'::text) AND st_intersects(geom, k.geom_caja))
+                     Rows Removed by Filter: 101
+                     Buffers: shared hit=5095
+ Planning:
+   Buffers: shared hit=2
+ Planning Time: 0.159 ms
+ Execution Time: 484.214 ms
+
+--- P4. Plan con comunas_sub (64 vértices)
+                                                 QUERY PLAN                                                 
+------------------------------------------------------------------------------------------------------------
+ GroupAggregate (actual time=487.677..900.865 rows=30 loops=1)
+   Group Key: s.gid
+   Buffers: shared hit=16305
+   ->  Sort (actual time=479.375..479.909 rows=5363 loops=1)
+         Sort Key: s.gid
+         Sort Method: quicksort  Memory: 23670kB
+         Buffers: shared hit=16305
+         ->  Nested Loop (actual time=0.208..471.387 rows=5363 loops=1)
+               Buffers: shared hit=16305
+               ->  Seq Scan on comunas_sub s (actual time=0.006..0.073 rows=129 loops=1)
+                     Buffers: shared hit=16
+               ->  Index Scan using red_ruta_gix on red_ruta r (actual time=0.410..3.646 rows=42 loops=129)
+                     Index Cond: (geom && s.geom)
+                     Filter: ((modo = 'bus'::text) AND st_intersects(geom, s.geom))
+                     Rows Removed by Filter: 94
+                     Buffers: shared hit=16289
+ Planning Time: 0.264 ms
+ Execution Time: 901.475 ms
+
