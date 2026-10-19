@@ -1,7 +1,7 @@
 # Tarea 1 · Santiago centro en PostGIS: OSM × GTFS
 
 Procesamiento Masivo de Datos (ELE051-B / EIN102B) · USM 2026-2 · Paralelo 701
-Integrantes: [COMPLETAR]
+Integrantes: Joaquín Mondaca · Vicente Hermosilla · Andrés Pérez
 
 ¿Cómo se relaciona la ciudad construida (OpenStreetMap) con la red de transporte público (GTFS de la DTPM)?
 
@@ -38,8 +38,8 @@ No se versionan (`.gitignore`). Cada archivo queda registrado con su tamaño, `s
 
 | Fuente | Archivo | Fecha de los datos | Descarga | Origen |
 |---|---|---|---|---|
-| OpenStreetMap, Chile | `chile-latest.osm.pbf` | [COMPLETAR: `osmosis_replication_timestamp`] | [COMPLETAR] | Geofabrik, `south-america/chile-latest.osm.pbf` |
-| GTFS Santiago | [COMPLETAR `GTFS_AAAAMMDD.zip`] | [COMPLETAR: `feed_version` y vigencia] | [COMPLETAR] | DTPM, «GTFS vigente» |
+| OpenStreetMap, Chile | `chile-261017.osm.pbf` | 2026-10-17T20:20:51Z | 2026-10-17 | Geofabrik, `south-america/chile-latest.osm.pbf` |
+| GTFS Santiago | `GTFS_20261003.zip` | V168.20261003 (2026-10-03 → 2026-12-31) | 2026-10-03 | DTPM, «GTFS vigente» |
 | DPA 2023 | `comunas_cl.sql` | 2023 | del curso | Laboratorio 03 |
 
 Caja: lon −70,75 … −70,52 · lat −33,52 … −33,36.
@@ -81,16 +81,16 @@ datos/comunas_cl.sql ─ psql en base temporal ─ ogr2ogr ───────
 
 | | Filas |
 |---|---|
-| multipolygons inválidos (total) | [COMPLETAR] |
-| motivo más frecuente | [COMPLETAR] |
-| edificios reparados | [COMPLETAR] |
-| edificios descartados tras reparar | [COMPLETAR] |
+| multipolygons inválidos (total) | 16 |
+| motivo más frecuente | Self-intersection (16/16) |
+| edificios reparados | 10 |
+| edificios descartados tras reparar | 0 |
 
-**GTFS: salidas reales con `frequencies.txt`.** Según la especificación GTFS, si un `trip_id` está en `frequencies.txt`, sus horarios en `stop_times` son una plantilla y el viaje sale cada `headway_secs` entre `start_time` y `end_time`. Cada fila de frecuencias aporta `ceil((end − start) / headway)` salidas, y un viaje sin frecuencias sale una vez. Se toma un **miércoles** como día hábil tipo (servicios con `wednesday = 1`; no se aplican las excepciones de `calendar_dates`, porque se busca un día típico y no una fecha). Con eso, `stgo.servicio_paradero` tiene las salidas diarias que pasan por cada paradero y `stgo.red_ruta` las salidas de cada ruta y sentido. `stop_times.txt`, con [COMPLETAR] filas, se carga en streaming con `COPY` y se agrega una sola vez.
+**GTFS: salidas reales con `frequencies.txt`.** Según la especificación GTFS, si un `trip_id` está en `frequencies.txt`, sus horarios en `stop_times` son una plantilla y el viaje sale cada `headway_secs` entre `start_time` y `end_time`. Cada fila de frecuencias aporta `ceil((end − start) / headway)` salidas, y un viaje sin frecuencias sale una vez. Se toma un **miércoles** como día hábil tipo (servicios con `wednesday = 1`; no se aplican las excepciones de `calendar_dates`, porque se busca un día típico y no una fecha). Con eso, `stgo.servicio_paradero` tiene las salidas diarias que pasan por cada paradero y `stgo.red_ruta` las salidas de cada ruta y sentido. `stop_times.txt`, con **1 098 529** filas, se carga en streaming con `COPY` y se agrega una sola vez.
 
 **Paraderos GTFS.** Solo puntos de abordaje (`location_type` 0 o vacío). `sirve_bus` dice si pasa alguna ruta de bus, porque el feed también trae andenes de Metro. Todas las comparaciones con `bus_stop` de OSM usan `sirve_bus`.
 
-**Recorridos y varios shapes por ruta.** `stgo.recorridos` tiene una LineString por `shape_id`: `ST_MakeLine(punto ORDER BY shape_pt_sequence::int)`, sin vértices repetidos, asociada a su ruta vía `trips.txt`. Para las preguntas de longitud **no se elige un shape**: `stgo.red_ruta` une todos los shapes de cada ruta y sentido (`ST_Union` tras ajustar a una grilla de 1 m). Donde las variantes comparten calle, el tramo cuenta una vez; donde se separan, se conservan los dos. Sumar todos los shapes inflaría los km, y quedarse con uno perdería los desvíos. La diferencia queda medida: km sumando shapes [COMPLETAR] contra km de red unida [COMPLETAR]. La P6 (rutas por celda) usa los shapes y cuenta `route_id` distintos.
+**Recorridos y varios shapes por ruta.** `stgo.recorridos` tiene una LineString por `shape_id`: `ST_MakeLine(punto ORDER BY shape_pt_sequence::int)`, sin vértices repetidos, asociada a su ruta vía `trips.txt`. Para las preguntas de longitud **no se elige un shape**: `stgo.red_ruta` une todos los shapes de cada ruta y sentido (`ST_Union` tras ajustar a una grilla de 1 m). Donde las variantes comparten calle, el tramo cuenta una vez; donde se separan, se conservan los dos. Sumar todos los shapes inflaría los km, y quedarse con uno perdería los desvíos. La diferencia queda medida: km sumando shapes **14 932 km** contra km de red unida **12 357 km** (−17 %). La P6 (rutas por celda) usa los shapes y cuenta `route_id` distintos.
 
 **DPA.** El volcado del Lab 03 se ejecuta en una base temporal y su tabla de comunas se copia a `fuente_dpa` con `ogr2ogr`. Así no importa qué esquema, extensiones o comandos traiga el archivo, y la base del trabajo no se ensucia si el volcado tiene errores. Las columnas de nombre y código se reconocen entre nombres habituales. `comunas.geom_caja` es la parte de cada comuna dentro de la caja, y toda densidad se calcula sobre ella. `comunas_sub = ST_Subdivide(geom_caja, 64)`. El valor 64 se eligió con el experimento de la P4 (`resultados/p4_km_comuna.txt`).
 
@@ -98,7 +98,7 @@ datos/comunas_cl.sql ─ psql en base temporal ─ ogr2ogr ───────
 
 ## 5. Tablas e índices
 
-[COMPLETAR: pegar la sección «Tablas de stgo» de `resultados/carga_resumen.txt`]
+Datos de `resultados/carga_resumen.txt` (generado por `./cargar.sh`):
 
 | Tabla `stgo` | Contenido |
 |---|---|
@@ -115,7 +115,11 @@ datos/comunas_cl.sql ─ psql en base temporal ─ ogr2ogr ───────
 
 ## 6. Qué no funcionó / limitaciones
 
-[COMPLETAR con lo que ocurra al correrlo: tiempos, memoria, cambios de fuente.]
+- Carga completa: **139 s** en la máquina de desarrollo (PostGIS en Docker, hardware estándar).
+- `ST_Subdivide` con max_vertices=64 **no acelera** la P4 frente a las comunas originales (ver experimento en `resultados/p4_km_comuna.txt`); el planner elige el plan más rápido sin subdividir.
+- Los índices GiST de polígono (`edificios_geom_gix`, `amenidades_gix`, `calles_geom_gix`) registraron **0 usos** en las 7 preguntas, porque las consultas usan el punto interior o índices parciales más selectivos. Se mantienen para consultas ad hoc desde QGIS.
+- El volcado DPA ejecutado directamente sobre la base de trabajo puede contaminar el esquema; se resolvió con base temporal en `paso_dpa.sh`.
+- `red_ruta` ajusta a 1 m: dos variantes dibujadas por la misma calle pero separadas por más de 1 m quedan como líneas distintas y esos tramos se cuentan dos veces.
 
 - Un paradero exactamente sobre el límite entre dos comunas cuenta en ambas.
 - `red_ruta` ajusta a 1 m: dos variantes dibujadas por la misma calle pero separadas por más de 1 m quedan como líneas distintas y esos tramos se cuentan dos veces.
